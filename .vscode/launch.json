@@ -13,6 +13,18 @@
                 "<node_internals>/**"
             ],
             "type": "node"
+        },
+        {
+            "name": "Install modules via NPM",
+            "request": "launch",
+            "runtimeArgs": [
+                "install"
+            ],
+            "runtimeExecutable": "npm",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node"
         }
     ]
   }
