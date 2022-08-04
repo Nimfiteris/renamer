@@ -1,0 +1,21 @@
+{
+  "name": "hello_vs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "rename": "ts-node src/rename.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^18.6.3",
+    "docx4js": "^3.2.20",
+    "docxconv": "^0.2.2",
+    "mammoth": "^1.4.21",
+    "office-text-extractor": "^2.0.0",
+    "pdf2json": "^2.0.1",
+    "tsc": "^2.0.4"
+  }
+}
