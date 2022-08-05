@@ -1,3 +1,5 @@
 content
 dist
 node_modules
+tmp
+output.json

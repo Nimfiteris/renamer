@@ -13,18 +13,33 @@ fs.readdir("./content", (err, files) => {
 				n(new Error(errData))
 			} );
 			pdfParser.on("pdfParser_dataReady", ({ Transcoder, Meta, Pages }: any) => {
-				const data = Pages.map((page: any) =>  page.Texts.map((t: any) => t.R).filter((t:any) => {
-					// console.log(t);
-					const [fontFaceId, fontSize, isBold, isItalic] = t[0].TS;
-					return fontSize > 16 && isBold && fontSize < 20
-				}))[0];
+				const raw = Pages[0].Texts.map((t: any) => t.R);
 
-				const result = data.map(([text]: any) => decodeURIComponent( text.T )).join(' ')
+				const data = raw.reduce((acc, t:any, idx: number) => {
+					const [fontFaceId, fontSize, isBold, isItalic] = t[0].TS;
+					if (fontSize > 16 && isBold && fontSize < 20) {
+						acc.title.push(t[0])
+					} else if (fontSize > 24 && isBold && idx > 30) {
+						acc.id.push(t[0])
+					}
+					return acc;
+				}, {
+					title: [],
+					id: [],
+				});
+
+				const title = data.title.map((text: any) => decodeURIComponent( text.T ).trim()).join(' ')
 					.replace(/\//g, "-");
+
+				const id = data.id.map((text: any) => decodeURIComponent( text.T ).trim()).join(' ')
+					.replace(/\//g, "-");
+
+				const result = `${id} ${title}`
+				const dist = `./dist/${result}.pdf`;
 			
-				fs.copyFile(fileName, `./dist/${result}.pdf`, (err: any) => {
+				fs.copyFile(fileName, dist, (err: any) => {
 					if (err) {
-						console.error(`ERROR COPYING ${fileName} to ${result}`, err)
+						console.error(`ERROR COPYING ${fileName} to ${dist}`, err)
 						return n(err);
 					}
 					console.log(`Copying ${fileName} to ${result} finished`)
