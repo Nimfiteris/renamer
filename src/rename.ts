@@ -3,6 +3,7 @@ import fs from 'fs'
 import PDFParser from "pdf2json";
 
 fs.readdir("./content", (err, files) => {
+	const amounts = {}
 	return Promise.all(files.map((file) => {
 		const fileName = `./content/${file}`
 		return new Promise((y, n) => {
@@ -13,13 +14,15 @@ fs.readdir("./content", (err, files) => {
 				n(new Error(errData))
 			} );
 			pdfParser.on("pdfParser_dataReady", ({ Transcoder, Meta, Pages }: any) => {
-				const raw = Pages[0].Texts.map((t: any) => t.R);
+				const raw = Pages.reduce((acc: Array<any>, {Texts}) => {
+					return acc.concat(Texts)
+				}, []).map((t: any) => t.R);
 
 				const data = raw.reduce((acc, t:any, idx: number) => {
 					const [fontFaceId, fontSize, isBold, isItalic] = t[0].TS;
 					if (fontSize > 16 && isBold && fontSize < 20) {
 						acc.title.push(t[0])
-					} else if (fontSize > 24 && isBold && idx > 30) {
+					} else if (fontSize > 24 && idx > 30) {
 						acc.id.push(t[0])
 					}
 					return acc;
@@ -36,6 +39,12 @@ fs.readdir("./content", (err, files) => {
 
 				const result = `${id} ${title}`
 				const dist = `./dist/${result}.pdf`;
+
+				if (amounts[result]) {
+					return n(new Error(`DUBLICATED VALUE ${result} from ${fileName} and ${amounts[result]}`))
+				}
+
+				amounts[result] = fileName
 			
 				fs.copyFile(fileName, dist, (err: any) => {
 					if (err) {
@@ -55,6 +64,8 @@ fs.readdir("./content", (err, files) => {
 		console.log("FINISHED: #", data.length)
 		fs.writeFileSync("./output.json", JSON.stringify(data, undefined, "\t"));
 	}).catch((error) => {
+		fs.writeFileSync("./output.json", error.toString());
+		console.log({error})
 		console.error(error);
 	});
 })
